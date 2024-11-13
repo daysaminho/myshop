@@ -1,4 +1,3 @@
-// routes/debugRoutes.js
 const express = require('express');
 const data = require('../data');
 const router = express.Router();

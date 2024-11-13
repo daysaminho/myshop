@@ -1,4 +1,3 @@
-// middlewares/authMiddleware.js
 const data = require('../data');
 
 // Middleware pour vérifier si l'utilisateur est authentifié

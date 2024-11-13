@@ -1,4 +1,3 @@
-// routes/adminRoutes.js
 const express = require('express');
 const { isAuthenticated, isAdmin } = require('../middlewares/authMiddleware');
 const data = require('../data');
