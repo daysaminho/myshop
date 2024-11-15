@@ -15,7 +15,7 @@ router.get('/articles', (req, res) => {
 
 // Création d'un article
 router.post('/create', (req, res) => {
-    const { name, price, description } = req.body
+    const { name, price, description, imageUrl } = req.body
 
     // Vérifier si l'article existe déjà
     const articleExists = data.articles.some(u => u.name === name || u.description === description)
@@ -25,7 +25,7 @@ router.post('/create', (req, res) => {
     }
 
     // Créer un nouvel article et l'ajouter à `data.articles`
-    const newArticle = { name, price, description }
+    const newArticle = { name, price, description, imageUrl }
     data.articles.push(newArticle)
 
     // Réponse de confirmation
@@ -50,7 +50,7 @@ router.delete('/delete', (req, res) => {
 
 
 router.put('/update', (req, res) => {
-    const { name, newName, newPrice, newDescription } = req.body
+    const { name, newName, newPrice, newDescription, newImageUrl} = req.body
     
     const articleIndex = data.articles.findIndex(u => u.name === name)
 
@@ -65,6 +65,7 @@ router.put('/update', (req, res) => {
     if (newName !== undefined) data.articles[articleIndex].name = newName
     if (newPrice !== undefined) data.articles[articleIndex].price = newPrice
     if (newDescription !== undefined) data.articles[articleIndex].description = newDescription
+    if (newImageUrl !== undefined) data.articles[articleIndex].imageUrl = newImageUrl
 
     res.json({
         message: 'L\'Article a bien été mis à jour',

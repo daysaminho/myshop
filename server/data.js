@@ -6,7 +6,7 @@ const users = [
 let currentUser = null 
 
 const articles = [
-  {name: 'exemple', price: 1, description: 'aa' }
+  {name: 'exemple', price: 1, description: 'aa', imageUrl: '' }
 ]
 
 module.exports = { users, currentUser, articles }

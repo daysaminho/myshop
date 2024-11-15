@@ -13,11 +13,6 @@ app.use(express.json())
 app.use(express.urlencoded({ extended : true }))
 // var urlencodedParser = bodyParser.urlencodedParser
 
-// Route principale pour servir index.html
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, './client/index.html'))
-})
-
 //Routes
 app.use('/auth', authRoutes) // Authentification
 app.use('/admin', adminRoutes) // Routes admin 
