@@ -1,14 +1,50 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const dataBase = require('../dataBase'); // Connexion à la base de données
 const router = express.Router();
 
+// Clé secrète utilisée pour signer les tokens
+const secretKey = 'votre_cle_secrete';
+
+// Fonction pour vérifier si l'utilisateur est admin
+function isAdmin(req, res) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(401).json({ error: 'Accès non autorisé, aucun token fourni' });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, secretKey); // Vérification du token
+
+        // Vérifie si le rôle est admin
+        if (decoded.role !== 'admin') {
+            return res.status(403).json({ error: 'Accès interdit : Rôle non autorisé' });
+        }
+
+        // Stocke les infos de l'utilisateur décodé pour l'utiliser dans les routes si besoin
+        req.user = decoded;
+        return null; // Indique qu'il n'y a pas d'erreur
+    } catch (err) {
+        return res.status(401).json({ error: 'Token invalide ou expiré' });
+    }
+}
+
 // Accueil de la section admin
 router.get('/', (req, res) => {
+    const error = isAdmin(req, res);
+    if (error) return;
+
     res.json({ message: 'Bienvenue dans la section admin', user: dataBase.currentUser });
 });
 
 // Affiche tous les utilisateurs depuis la base de données
 router.get('/users', (req, res) => {
+    const error = isAdmin(req, res);
+    if (error) return;
+
     const query = 'SELECT * FROM users';
     dataBase.query(query, (err, result) => {
         if (err) {
@@ -21,6 +57,9 @@ router.get('/users', (req, res) => {
 
 // Affiche tous les articles depuis la base de données
 router.get('/articles', (req, res) => {
+    const error = isAdmin(req, res);
+    if (error) return;
+
     const query = 'SELECT * FROM articles';
     dataBase.query(query, (err, result) => {
         if (err) {
@@ -33,9 +72,11 @@ router.get('/articles', (req, res) => {
 
 // Création d'un article
 router.post('/create', (req, res) => {
+    const error = isAdmin(req, res);
+    if (error) return;
+
     const { name, price, description, imageUrl } = req.body;
 
-    // Vérifier si l'article existe déjà (par nom ou description)
     const queryCheckArticle = 'SELECT * FROM articles WHERE name = ? OR description = ?';
     dataBase.query(queryCheckArticle, [name, description], (err, result) => {
         if (err) {
@@ -47,7 +88,6 @@ router.post('/create', (req, res) => {
             return res.status(400).json({ error: 'Nom ou description existant' });
         }
 
-        // Créer un nouvel article dans la base de données
         const queryInsertArticle = 'INSERT INTO articles (name, price, description, imageUrl) VALUES (?, ?, ?, ?)';
         dataBase.query(queryInsertArticle, [name, price, description, imageUrl], (err, result) => {
             if (err) {
@@ -55,7 +95,6 @@ router.post('/create', (req, res) => {
                 return res.status(500).json({ error: 'Erreur serveur' });
             }
 
-            // Réponse de confirmation
             res.json({ message: 'Article ajouté avec succès', articles: { name } });
         });
     });
@@ -63,6 +102,9 @@ router.post('/create', (req, res) => {
 
 // Suppression d'un article
 router.delete('/delete', (req, res) => {
+    const error = isAdmin(req, res);
+    if (error) return;
+
     const { name } = req.body;
 
     const queryDeleteArticle = 'DELETE FROM articles WHERE name = ?';
@@ -82,9 +124,11 @@ router.delete('/delete', (req, res) => {
 
 // Mise à jour d'un article
 router.put('/update', (req, res) => {
+    const error = isAdmin(req, res);
+    if (error) return;
+
     const { name, newName, newPrice, newDescription, newImageUrl } = req.body;
 
-    // Vérifier si l'article existe
     const queryCheckArticle = 'SELECT * FROM articles WHERE name = ?';
     dataBase.query(queryCheckArticle, [name], (err, result) => {
         if (err) {
@@ -96,7 +140,6 @@ router.put('/update', (req, res) => {
             return res.status(400).json({ error: 'Article non trouvé' });
         }
 
-        // Vérifier si le nouveau nom est déjà utilisé par un autre article
         if (newName && newName !== name) {
             const queryCheckName = 'SELECT * FROM articles WHERE name = ?';
             dataBase.query(queryCheckName, [newName], (err, result) => {
@@ -109,7 +152,6 @@ router.put('/update', (req, res) => {
                     return res.status(400).json({ error: 'Le nouveau nom est déjà utilisé' });
                 }
 
-                // Mise à jour de l'article dans la base de données
                 const queryUpdateArticle = 'UPDATE articles SET name = ?, price = ?, description = ?, imageUrl = ? WHERE name = ?';
                 dataBase.query(queryUpdateArticle, [newName || name, newPrice || result[0].price, newDescription || result[0].description, newImageUrl || result[0].imageUrl, name], (err, result) => {
                     if (err) {
