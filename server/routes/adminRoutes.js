@@ -1,10 +1,6 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const dataBase = require('../dataBase'); // Connexion à la base de données
+const dataBase = require('../database'); // Importer la connexion à la base de données
 const router = express.Router();
-
-// Clé secrète utilisée pour signer les tokens
-const secretKey = 'votre_cle_secrete';
 
 // Fonction pour vérifier si l'utilisateur est admin
 function isAdmin(req, res) {
